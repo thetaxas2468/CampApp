@@ -16,13 +16,18 @@ const add = async ()=>{
     await campGround.deleteMany({});
     for(let i=0;i<50;i++){
         let rand=Math.floor(Math.random() * 1000);
+        const price = Math.floor(Math.random() * 20) + 10;
         const camp=new campGround({
             location:`${helper[0][rand].city},${helper[0][rand].state}`,
-            title:`${sample(helper[1][0])} ${sample(helper[1][1])}`
+            title:`${sample(helper[1][0])} ${sample(helper[1][1])}`,
+            image: 'https://source.unsplash.com/collection/483251',
+            description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam dolores vero perferendis laudantium, consequuntur voluptatibus nulla architecto, sit soluta esse iure sed labore ipsam a cum nihil atque molestiae deserunt!',
+            price:price,
         })
         await camp.save();
     }
-    mongoose.connection.close();
 }
 
-add();
+add().then(() => {
+    mongoose.connection.close();
+})
