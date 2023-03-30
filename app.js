@@ -7,6 +7,9 @@ const ejsMate = require("ejs-mate");
 const catchAsync = require("./helpers/handleAsync");
 const CustomError = require("./helpers/CustomError");
 const campgroundSchema = require("./schemas/campgroundJoiSchema");
+const reviewSchema = require("./schemas/reviewsJoiSchema");
+const Review = require("./models/review");
+
 
 mongoose.connect("mongodb://localhost:27017/camp",{useNewUrlParser:true, useUnifiedTopology:true});
 const db = mongoose.connection;
@@ -37,6 +40,18 @@ const validateCampgroundMiddleWare = (req,res,next)=>{
         next();
     }
 }
+
+const validateReviewMiddleWare = (req,res,next)=>{
+    const {error} = reviewSchema.reviewsSchema.validate(req.body);
+    if(error){
+        const msg=error.details.map(e=>e.message).join(",");
+        throw new CustomError(msg,400);
+    }
+    else{
+        next();
+    }
+}
+
 app.get("/",(req,res)=>{
     res.render("home");
 })
@@ -50,15 +65,14 @@ app.get('/campgrounds/new', (req, res) => {
     res.render('campgrounds/new');
 })
 
-app.post('/campgrounds', validateCampgroundMiddleWare ,catchAsync( async (req, res, next) => {
-    // if(!req.body.campground) throw new CustomError("Invalid Campground Data",400);
+app.post('/campgrounds', validateCampgroundMiddleWare ,catchAsync( async (req, res) => {
     const campground = new Campground(req.body.campground);
     await campground.save();
     res.redirect(`/campgrounds/${campground._id}`);
 }));
 
-app.get('/campgrounds/:id', catchAsync(async (req, res,) => {
-    const campground = await Campground.findById(req.params.id)
+app.get('/campgrounds/:id', catchAsync(async (req, res) => {
+    const campground = await Campground.findById(req.params.id).populate("reviews");
     res.render('campgrounds/show', { campground });
 }));
 
@@ -79,10 +93,30 @@ app.delete('/campgrounds/:id', catchAsync(async (req, res) => {
     res.redirect('/campgrounds');
 }));
 
+app.post('/campgrounds/:id/reviews',validateReviewMiddleWare ,catchAsync(async (req, res) => {
+    const campground = await Campground.findById(req.params.id);
+    const review = new Review(req.body.review);
+    campground.reviews.push(review);
+    await review.save();
+    await campground.save();
+    res.redirect(`/campgrounds/${campground._id}`);
+}))
+
+app.delete("/campgrounds/:id/reviews/:reviewId",catchAsync( async (req,res)=>{
+    const {id,reviewId} = req.params;
+    await Campground.findByIdAndUpdate(id,{$pull:{reviews:reviewId}});
+    await Review.findByIdAndDelete(req.params.reviewId);
+    res.redirect(`/campgrounds/${id}`)
+
+}))
+
+
+// Unexisted route
 app.all('*',(req,res,next)=>{
     next(new CustomError("Page Not Found",404));
 })
 
+// Error handling 
 app.use((err,req,res,next)=>{
     const {statusCode = 500 ,message = "Something went wrong"} = err;
     res.status(statusCode).render("error",{err});
