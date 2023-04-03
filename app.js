@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+}
+
 const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
@@ -14,7 +18,7 @@ const reviewsRoutes = require("./routes/reviews.js");
 const campgroundRoutes = require("./routes/campgrounds");
 const userRoutes = require("./routes/users");
 
-mongoose.connect("mongodb://localhost:27017/camp", { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(`mongodb://localhost:27017/${process.env.COLLECTION_NAME}`, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "Connection Error"));
 db.once("open", () => {
@@ -33,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodoverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
 const sessionConfigiration = {
-    secret: "thisisnotasecret",
+    secret: process.env.SECRET_KEY,
     resave: false,
     saveUninitialized: true,
     cookie: {
