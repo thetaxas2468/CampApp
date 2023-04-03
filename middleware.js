@@ -14,7 +14,6 @@ module.exports.isLoggedIn = (req, res, next) => {
 }
 
 module.exports.validateCampgroundMiddleWare = (req, res, next) => {
-
     const { error } = campgroundSchema.campgroundSchema.validate(req.body);
     if (error) {
         const msg = error.details.map(e => e.message).join(",")

@@ -21,7 +21,12 @@ const add = async () => {
             author: "6429eedf6b22f8e65687e118",
             location: `${helper[0][rand].city},${helper[0][rand].state}`,
             title: `${sample(helper[1][0])} ${sample(helper[1][1])}`,
-            image: 'https://source.unsplash.com/collection/483251',
+            image: [
+                {
+                  url: 'https://res.cloudinary.com/dy8igq4ea/image/upload/v1680540767/Campgrounds/eavvhoxsfs1ns0itnqs6.jpg',
+                  filename: 'Campgrounds/eavvhoxsfs1ns0itnqs6',
+                }
+              ],
             description: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam dolores vero perferendis laudantium, consequuntur voluptatibus nulla architecto, sit soluta esse iure sed labore ipsam a cum nihil atque molestiae deserunt!',
             price: price,
         })
